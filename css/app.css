@@ -64,8 +64,9 @@ svg.i{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-widt
 /* App shell */
 .app{max-width:1240px;margin:0 auto;padding:28px 20px 56px;display:grid;grid-template-columns:minmax(0,1fr);gap:calc(var(--gap) + 4px)}
 .top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.hello h1{margin:0;font:600 23px/1.2 var(--font);letter-spacing:-.015em;text-wrap:balance}
-.hello p{margin:3px 0 0;color:var(--muted)}
+.hello h1{margin:0;font:600 36px/1.12 var(--font);letter-spacing:-.025em;text-wrap:balance}
+.hello p{margin:6px 0 0;color:var(--ink-2);font-size:15.5px}
+@media (max-width:720px){.hello h1{font-size:28px}}
 .top-actions{display:flex;gap:8px;align-items:center}
 
 /* Buttons */
@@ -401,3 +402,21 @@ body.customising .w-chrome{display:flex;flex-wrap:wrap;position:absolute;inset:8
 }
 
 img.broken{visibility:hidden}
+
+/* Wallpaper mode: photo behind a soft dark veil, translucent glass cards */
+:root[data-bg="wallpaper"] body{background-color:#05070b;background-image:linear-gradient(180deg,rgba(5,8,14,.30),rgba(5,8,14,.50)),var(--wall);background-size:cover;background-position:center;background-attachment:fixed}
+:root[data-bg="wallpaper"] .w,
+:root[data-bg="wallpaper"] .search-box{
+  background:color-mix(in srgb,var(--surface) var(--card-op,70%),transparent);
+  backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);
+  border-color:rgba(255,255,255,.10);
+  --surface-2:rgba(255,255,255,.05); --surface-3:rgba(255,255,255,.10); --surface:rgba(8,12,20,.35);
+  --line:rgba(255,255,255,.08); --line-2:rgba(255,255,255,.14);
+  --ink-2:#d3dae6; --muted:#aeb8c9; --faint:#8f9aae;
+}
+:root[data-bg="wallpaper"] .hello,
+:root[data-bg="wallpaper"] .app > .status-line{text-shadow:0 1px 14px rgba(0,0,0,.55)}
+:root[data-bg="wallpaper"] .hello p{color:#d7deea}
+:root[data-bg="wallpaper"] .app > .status-line{color:#c3cbd8}
+:root[data-bg="wallpaper"] .top-actions .btn{background:rgba(12,17,27,.55);backdrop-filter:blur(12px);border-color:rgba(255,255,255,.14)}
+:root[data-bg="wallpaper"] body.customising .w{border-color:rgba(255,255,255,.28)}

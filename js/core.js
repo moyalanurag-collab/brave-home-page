@@ -35,7 +35,7 @@
   /* ---------- Defaults ---------- */
   CC.defaults = {
     settings: {
-      name: "Anurag", theme: "midnight", accent: "ember", background: "dots", density: "comfortable", engine: "google",
+      name: "Anurag", theme: "midnight", accent: "ember", background: "dots", cardOpacity: 70, density: "comfortable", engine: "google",
       clock: { style: "hybrid", hour12: true, seconds: true, tz: "Asia/Kolkata", label: "Mumbai",
         second: { on: true, tz: "Europe/London", label: "Glasgow" } },
       weather: { name: "Mumbai", region: "Maharashtra, India", lat: 19.07283, lon: 72.88261, units: "c" },

@@ -37,5 +37,8 @@ This makes the page open in every new tab and turns on calendar sync, suggestion
 
 The extension keeps its own data, separate from the local page. To move your tasks and notes across, use Settings > Your data > Download backup on the local page, then Restore backup in the extension.
 
+## Wallpaper
+`wallpaper.jpg` in this folder is used as the background when Settings > Appearance > Background is set to "Wallpaper image". Replace the file to change it, or use Settings > Choose image (stored in the browser, which also works on the phone). Card opacity is in the same section. The image is kept out of GitHub.
+
 ## Data
 Everything is saved in this browser on this computer (localStorage), so it survives restarts. Clearing Brave's site data for local files, or for the extension, erases it. Download a backup now and then.

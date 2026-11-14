@@ -8,10 +8,19 @@
   function applyTheme() {
     var s = S(), a = CC.ACCENTS[s.accent] || CC.ACCENTS.ember;
     root.dataset.theme = s.theme; root.dataset.bg = s.background; root.dataset.density = s.density;
+    if (s.background === "wallpaper") root.style.setProperty("--wall", 'url("' + (CC.store.get("wallpaper", null) || new URL("wallpaper.jpg", location.href).href) + '")');
+    root.style.setProperty("--card-op", Math.max(30, Math.min(100, +s.cardOpacity || 70)) + "%");
     root.style.setProperty("--accent", a.c); root.style.setProperty("--accent-ink", a.ink);
   }
   applyTheme();
   CC.on("settings", applyTheme);
+  /* First run of this version: switch to the bundled wallpaper if the folder has one */
+  if (!CC.store.get("wpMigrated", false)) {
+    var probe = new Image();
+    probe.onload = function () { CC.store.set("wpMigrated", true); if (S().background !== "wallpaper") { S().background = "wallpaper"; CC.saveSettings(); } };
+    probe.onerror = function () { CC.store.set("wpMigrated", true); };
+    probe.src = "wallpaper.jpg";
+  }
 
   /* ---------- Layout state ---------- */
   CC.layout = {
@@ -349,6 +358,37 @@
     function toggle(id, val, on) { var i = h("input", { type: "checkbox", id: id, checked: val ? true : null }); i.addEventListener("change", function () { on(i.checked); save(); }); return h("span", { class: "switch" }, [i, h("i")]); }
     function text(id, val, ph, on) { var i = h("input", { class: "input", id: id, value: val || "", placeholder: ph || "", style: { width: "200px" } }); i.addEventListener("change", function () { on(i.value.trim()); save(); }); return i; }
     var s = S(), zoneOpts = CC.zones.map(function (z) { return [z, z.replace(/_/g, " ")]; });
+    function opacity() {
+      var out = h("span", { class: "muted num", style: { width: "40px", "text-align": "right" }, text: s.cardOpacity + "%" });
+      var r = h("input", { type: "range", id: "s-op", min: 30, max: 100, step: 5, value: s.cardOpacity, style: { width: "150px", "accent-color": "var(--accent)" }, "aria-label": "Card opacity" });
+      r.addEventListener("input", function () { s.cardOpacity = +r.value; out.textContent = r.value + "%"; root.style.setProperty("--card-op", r.value + "%"); });
+      r.addEventListener("change", save);
+      return h("span", { style: { display: "flex", gap: "8px", "align-items": "center" } }, [r, out]);
+    }
+    function wallRow() {
+      var file = h("input", { type: "file", accept: "image/*", class: "sr", id: "s-wall" });
+      file.addEventListener("change", function () {
+        var f = file.files[0]; if (!f) return;
+        var rd = new FileReader();
+        rd.onload = function () {
+          var img = new Image();
+          img.onload = function () {
+            var k = Math.min(1, 2560 / img.width), c = document.createElement("canvas");
+            c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+            c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+            var url = c.toDataURL("image/jpeg", 0.85);
+            if (!CC.store.set("wallpaper", url)) { CC.toast("That image is too large to save. Try a smaller one.", { icon: "x" }); return; }
+            s.background = "wallpaper"; save(); document.getElementById("s-bg").value = "wallpaper"; CC.toast("Wallpaper updated");
+          };
+          img.onerror = function () { CC.toast("That file isn't an image Brave can open", { icon: "x" }); };
+          img.src = rd.result;
+        };
+        rd.readAsDataURL(f);
+      });
+      var pick = h("label", { class: "btn sm", for: "s-wall", tabindex: "0", onkeydown: function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); file.click(); } } }, [icon("upload"), "Choose image"]);
+      var def = h("button", { class: "btn sm ghost", type: "button", text: "Use folder image", title: "Use wallpaper.jpg from the Command Centre folder", onclick: function () { try { localStorage.removeItem("cc.wallpaper"); } catch (e) {} s.background = "wallpaper"; save(); document.getElementById("s-bg").value = "wallpaper"; CC.toast("Using wallpaper.jpg"); } });
+      return h("div", { class: "set-row" }, [h("span", { text: "Wallpaper" }), h("span", { style: { display: "flex", gap: "6px" } }, [pick, file, def])]);
+    }
 
     // Appearance
     var sw = h("div", { class: "swatches", role: "group", "aria-label": "Accent colour" });
@@ -360,7 +400,9 @@
     body.appendChild(sec("Appearance", [
       row("Theme", select("s-theme", s.theme, Object.keys(CC.THEMES).map(function (k) { return [k, CC.THEMES[k]]; }), function (v) { s.theme = v; }), "s-theme"),
       h("div", { class: "set-row" }, [h("span", { text: "Accent colour" }), sw]),
-      row("Background", select("s-bg", s.background, [["dots", "Dot grid"], ["grid", "Line grid"], ["glow", "Soft glow"], ["plain", "Plain"]], function (v) { s.background = v; }), "s-bg"),
+      row("Background", select("s-bg", s.background, [["wallpaper", "Wallpaper image"], ["dots", "Dot grid"], ["grid", "Line grid"], ["glow", "Soft glow"], ["plain", "Plain"]], function (v) { s.background = v; }), "s-bg"),
+      wallRow(),
+      row("Card opacity", opacity(), "s-op"),
       row("Density", select("s-den", s.density, [["comfortable", "Comfortable"], ["compact", "Compact"]], function (v) { s.density = v; }), "s-den"),
       row("Your name", text("s-name", s.name, "Shown in the greeting", function (v) { s.name = v; paintHello(); }), "s-name")
     ]));
